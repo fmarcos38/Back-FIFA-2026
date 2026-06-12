@@ -1,0 +1,29 @@
+{
+  "name": "back-fifa-2026",
+  "version": "1.0.0",
+  "description": "Backend simple para login admin del fixture FIFA 2026",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --use-system-ca index.js",
+    "start": "node --use-system-ca index.js",
+    "test": "node --check index.js && node --check src/server.js && node --check src/config/admin.js && node --check src/config/authToken.js && node --check src/config/db.js && node --check src/controllers/authController.js && node --check src/controllers/resultsController.js && node --check src/routes/auth.js && node --check src/routes/authRoutes.js && node --check src/routes/results.js && node --check src/routes/resultsRoutes.js && node --check src/repositories/resultsRepository.js && node --check src/utils/http.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fmarcos38/Back-FIFA-2026.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/fmarcos38/Back-FIFA-2026/issues"
+  },
+  "homepage": "https://github.com/fmarcos38/Back-FIFA-2026#readme"
+}
