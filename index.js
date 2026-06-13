@@ -22,48 +22,12 @@ dotenv.config()
 
 const app = express()
 
-const normalizeOrigin = (origin) => String(origin || '').replace(/\/$/, '')
-const allowedOrigins = (process.env.FRONTEND_ORIGIN || process.env.FRONTEND_URL || '')
-    .split(',')
-    .map(normalizeOrigin)
-    .filter(Boolean)
-
-const isLocalDevelopmentOrigin = (origin) => {
-    try {
-        const { hostname } = new URL(origin)
-        return hostname === 'localhost' || hostname === '127.0.0.1'
-    } catch (error) {
-        return false
-    }
-}
-
-const isVercelOrigin = (origin) => {
-    try {
-        const { hostname } = new URL(origin)
-        return hostname === 'vercel.app' || hostname.endsWith('.vercel.app')
-    } catch (error) {
-        return false
-    }
-}
-
 app.use(express.json())
 app.use(
     cors({
-        origin: (origin, callback) => {
-            const normalizedOrigin = normalizeOrigin(origin)
-
-            if (
-                !origin ||
-                allowedOrigins.includes(normalizedOrigin) ||
-                isLocalDevelopmentOrigin(normalizedOrigin) ||
-                isVercelOrigin(normalizedOrigin)
-            ) {
-                return callback(null, true)
-            }
-
-            console.warn(`Origen no permitido por CORS: ${normalizedOrigin}`)
-            return callback(null, false)
-        },
+        origin: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
     }),
 )
 
