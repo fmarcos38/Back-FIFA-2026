@@ -75,4 +75,7 @@ const startServer = async () => {
     })
 }
 
-startServer()
+startServer().catch((error) => {
+    console.error('Error al iniciar el servidor:', error)
+    process.exit(1)
+})

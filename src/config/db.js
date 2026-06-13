@@ -14,12 +14,19 @@ async function dbConnection() {
     return null
   }
 
-  client = new MongoClient(uri)
-  await client.connect()
-  database = client.db(process.env.MONGODB_DB_NAME || 'fifa_2026')
+  try {
+    client = new MongoClient(uri)
+    await client.connect()
+    database = client.db(process.env.MONGODB_DB_NAME || 'fifa_2026')
 
-  console.log('Conectado a MongoDB')
-  return database
+    console.log('Conectado a MongoDB')
+    return database
+  } catch (error) {
+    client = null
+    database = null
+    console.error('No se pudo conectar a MongoDB. Usando persistencia JSON local.', error.message)
+    return null
+  }
 }
 
 function getDb() {
