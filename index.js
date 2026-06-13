@@ -37,17 +37,32 @@ const isLocalDevelopmentOrigin = (origin) => {
     }
 }
 
+const isVercelOrigin = (origin) => {
+    try {
+        const { hostname } = new URL(origin)
+        return hostname === 'vercel.app' || hostname.endsWith('.vercel.app')
+    } catch (error) {
+        return false
+    }
+}
+
 app.use(express.json())
 app.use(
     cors({
         origin: (origin, callback) => {
             const normalizedOrigin = normalizeOrigin(origin)
 
-            if (!origin || allowedOrigins.includes(normalizedOrigin) || isLocalDevelopmentOrigin(normalizedOrigin)) {
+            if (
+                !origin ||
+                allowedOrigins.includes(normalizedOrigin) ||
+                isLocalDevelopmentOrigin(normalizedOrigin) ||
+                isVercelOrigin(normalizedOrigin)
+            ) {
                 return callback(null, true)
             }
 
-            return callback(new Error('Origen no permitido por CORS'))
+            console.warn(`Origen no permitido por CORS: ${normalizedOrigin}`)
+            return callback(null, false)
         },
     }),
 )
