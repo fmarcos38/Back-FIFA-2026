@@ -1,11 +1,9 @@
 let express
 let dotenv
-let cors
 
 try {
     express = require('express')
     dotenv = require('dotenv')
-    cors = require('cors')
 } catch (error) {
     console.warn('Dependencias Express no instaladas. Usando servidor nativo como fallback.')
     require('./src/server')
@@ -23,13 +21,17 @@ dotenv.config()
 const app = express()
 
 app.use(express.json())
-app.use(
-    cors({
-        origin: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    }),
-)
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204)
+    }
+
+    return next()
+})
 
 app.get('/api/health', (req, res) => {
     res.json({ ok: true, service: 'Back FIFA 2026' })
