@@ -50,11 +50,29 @@ function mergeSeedWithResults(results) {
   Object.entries(seed).forEach(([matchId, seedResult]) => {
     const currentResult = mergedResults[matchId]
 
-    if (!currentResult || currentResult.source === 'public-seed') {
+    if (!currentResult) {
       mergedResults[matchId] = {
-        ...currentResult,
         ...seedResult,
       }
+      return
+    }
+
+    if (currentResult.source === 'public-seed') {
+      const editableFields = [
+        'homeGoals',
+        'awayGoals',
+        'homePenalties',
+        'awayPenalties',
+        'kickoff',
+        'status',
+      ]
+      const wasEdited = editableFields.some(
+        (field) => currentResult[field] !== seedResult[field],
+      )
+
+      mergedResults[matchId] = wasEdited
+        ? { ...currentResult, source: 'admin' }
+        : { ...currentResult, ...seedResult }
       return
     }
 
@@ -117,6 +135,7 @@ async function upsertResult(matchId, result) {
     results[matchId] = {
       ...results[matchId],
       ...result,
+      source: 'admin',
     }
     writeJsonResults(results)
     return results
@@ -133,6 +152,7 @@ async function upsertResult(matchId, result) {
         ...currentData,
         ...result,
         matchId,
+        source: 'admin',
         updatedAt: new Date(),
       },
     },
