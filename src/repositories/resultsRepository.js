@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { getDb, isMongoConnected } = require('../config/db')
+const { sanitizeMergedResult } = require('../utils/resultsValidation')
 
 const dataDir = path.join(process.cwd(), 'data')
 const resultsPath = path.join(dataDir, 'results.json')
@@ -132,11 +133,11 @@ async function writeResults(results) {
 async function upsertResult(matchId, result) {
   if (!isMongoConnected()) {
     const results = readJsonResults()
-    results[matchId] = {
+    results[matchId] = sanitizeMergedResult({
       ...results[matchId],
       ...result,
       source: 'admin',
-    }
+    })
     writeJsonResults(results)
     return results
   }
@@ -144,17 +145,28 @@ async function upsertResult(matchId, result) {
   const collection = getResultsCollection()
   const currentResult = await collection.findOne({ matchId })
   const { _id, ...currentData } = currentResult || {}
+  const nextResult = sanitizeMergedResult({
+    ...currentData,
+    ...result,
+    matchId,
+    source: 'admin',
+    updatedAt: new Date(),
+  })
+  const unsetFields = {}
+
+  if (nextResult.homePenalties === undefined) {
+    unsetFields.homePenalties = ''
+  }
+
+  if (nextResult.awayPenalties === undefined) {
+    unsetFields.awayPenalties = ''
+  }
 
   await collection.updateOne(
     { matchId },
     {
-      $set: {
-        ...currentData,
-        ...result,
-        matchId,
-        source: 'admin',
-        updatedAt: new Date(),
-      },
+      $set: nextResult,
+      ...(Object.keys(unsetFields).length > 0 ? { $unset: unsetFields } : {}),
     },
     { upsert: true },
   )

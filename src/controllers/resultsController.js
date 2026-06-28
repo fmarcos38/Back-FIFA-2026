@@ -1,8 +1,12 @@
 const { deleteResult, readResults, upsertResult } = require('../repositories/resultsRepository')
 const { isAdminRequest } = require('../config/authToken')
-
-const isValidGoal = (value) => Number.isInteger(value) && value >= 0
-const isOptionalValidGoal = (value) => value === undefined || value === '' || isValidGoal(Number(value))
+const {
+  isOptionalValidGoal,
+  isValidGoal,
+  sanitizeMergedResult,
+  validateCompletedKnockoutResult,
+  validateStatus,
+} = require('../utils/resultsValidation')
 
 const getResults = async (req, res) => {
   res.json({ ok: true, results: await readResults() })
@@ -61,6 +65,21 @@ const updateResult = async (req, res) => {
 
   if (req.body.status !== undefined) {
     result.status = req.body.status
+  }
+
+  if (!validateStatus(result.status)) {
+    return res.status(400).json({ ok: false, message: 'Estado de partido invalido' })
+  }
+
+  const currentResults = await readResults()
+  const nextResult = sanitizeMergedResult({
+    ...currentResults[matchId],
+    ...result,
+  })
+  const knockoutError = validateCompletedKnockoutResult(matchId, nextResult)
+
+  if (knockoutError) {
+    return res.status(400).json({ ok: false, message: knockoutError })
   }
 
   return res.json({ ok: true, results: await upsertResult(matchId, result) })
